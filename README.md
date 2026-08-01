@@ -98,11 +98,12 @@ GitHub Actions setiap ada push ke branch `main`.
 
 **URL produksi:** https://n4yun4.github.io/CV-Rafly-Kurahman/
 
-### Sekali saja: aktifkan GitHub Pages
+### Aktivasi Pages
 
-Buka **Settings → Pages** pada repository, lalu pilih **Source: GitHub Actions**.
-Workflow juga mencoba mengaktifkannya otomatis, tetapi bila deploy gagal dengan pesan
-"Pages is not enabled", lakukan langkah ini secara manual lalu jalankan ulang workflow.
+Tidak perlu setelan manual — `actions/deploy-pages` mengaktifkan GitHub Pages sendiri pada
+deploy pertama. Bila suatu saat deploy gagal dengan pesan *"Pages is not enabled for this
+repository"*, buka **Settings → Pages → Build and deployment → Source** lalu pilih
+**GitHub Actions**, kemudian jalankan ulang workflow dari tab **Actions**.
 
 ### Alur workflow
 
