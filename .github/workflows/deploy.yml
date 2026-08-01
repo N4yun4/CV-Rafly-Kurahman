@@ -39,13 +39,16 @@ jobs:
       - name: Periksa TypeScript
         run: npm run typecheck
 
-      # Menyediakan base_path & base_url sesuai nama repository,
-      # sekaligus mengaktifkan GitHub Pages bila belum aktif.
-      - name: Konfigurasi GitHub Pages
+      # URL Pages dihitung langsung dari nama owner & repository supaya build tidak
+      # bergantung pada status aktivasi Pages (owner selalu huruf kecil pada github.io).
+      - name: Tentukan URL GitHub Pages
         id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
+        run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          repo="${{ github.event.repository.name }}"
+          echo "base_path=/$repo" >> "$GITHUB_OUTPUT"
+          echo "base_url=https://$owner.github.io/$repo" >> "$GITHUB_OUTPUT"
+          echo "Situs akan tayang di https://$owner.github.io/$repo/"
 
       - name: Build (static export)
         env:
