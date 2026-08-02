@@ -1,34 +1,31 @@
 "use client";
 
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Download, Flame, HardHat, MapPin, MousePointerClick, Sparkles } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Marquee } from "@/components/ui/Marquee";
-import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
+import { useDecorativeMotion, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { heroStats, marqueeWords } from "@/lib/data";
-import { easeOutExpo } from "@/lib/motion";
 import { siteConfig } from "@/lib/site";
 import { cn, colorMap, scrollToSection } from "@/lib/utils";
 
+// Efek parallax hanya dimuat pada perangkat yang sanggup menjalankannya.
+const HeroParallax = dynamic(
+  () => import("@/components/HeroParallax").then((m) => m.HeroParallax),
+  { ssr: false },
+);
+
 const roles = [siteConfig.role, ...siteConfig.secondaryRoles];
+const roleStyles = ["bg-secondary text-ink", "bg-blue text-ink", "bg-green text-ink"];
+const RoleIcons = [Flame, HardHat, Sparkles];
 
 export function Hero() {
-  const ref = useRef<HTMLElement | null>(null);
   const reduced = usePrefersReducedMotion();
+  const decorEnabled = useDecorativeMotion();
   const [roleIndex, setRoleIndex] = useState(0);
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-
-  const parallaxSlow = useTransform(scrollYProgress, [0, 1], [0, 110]);
-  const parallaxFast = useTransform(scrollYProgress, [0, 1], [0, 230]);
-  const parallaxUp = useTransform(scrollYProgress, [0, 1], [0, -140]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
 
   useEffect(() => {
     if (reduced) return;
@@ -38,40 +35,23 @@ export function Hero() {
     return () => window.clearInterval(interval);
   }, [reduced]);
 
+  const RoleIcon = RoleIcons[roleIndex] ?? Flame;
+
   return (
     <section
       id="beranda"
-      ref={ref}
       className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden px-5 pb-28 pt-28 sm:px-8 sm:pb-32 md:pt-32"
       aria-label="Perkenalan"
     >
-      {/* Shape parallax dekoratif */}
-      <motion.div
-        style={{ y: parallaxFast }}
-        className="nb-border-thick pointer-events-none absolute -right-10 top-24 hidden h-40 w-40 rotate-12 rounded-full bg-secondary/80 md:block"
-        aria-hidden="true"
-      />
-      <motion.div
-        style={{ y: parallaxSlow }}
-        className="nb-border-thick pointer-events-none absolute bottom-24 left-[-3rem] hidden h-48 w-48 -rotate-6 bg-blue/70 md:block"
-        aria-hidden="true"
-      />
-      <motion.div
-        style={{ y: parallaxUp }}
-        className="nb-border-thick pointer-events-none absolute right-1/3 top-16 hidden h-16 w-16 rotate-45 bg-green lg:block"
-        aria-hidden="true"
-      />
+      {decorEnabled ? <HeroParallax /> : null}
 
-      <motion.div
-        style={{ opacity: heroOpacity }}
-        className="nb-container relative grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10"
-      >
+      <div className="nb-container relative grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
         {/* Kolom teks — animasi masuk memakai CSS agar tidak menunggu hydration */}
         <div className="flex flex-col items-start gap-6">
           <div className="animate-rise" style={{ animationDelay: "0.05s" }}>
             <span className="nb-border inline-flex items-center gap-2 rounded-brutal bg-surface px-4 py-2 font-heading text-xs font-extrabold uppercase tracking-[0.2em] shadow-brutal">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green opacity-75" />
+                <span className="decor-loop absolute inline-flex h-full w-full animate-ping rounded-full bg-green opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green" />
               </span>
               Terbuka untuk peluang kerja
@@ -83,13 +63,7 @@ export function Hero() {
             style={{ animationDelay: "0.1s" }}
           >
             Halo, Saya{" "}
-            <motion.span
-              className="inline-block"
-              animate={reduced ? undefined : { rotate: [0, 18, -8, 18, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 2.6 }}
-            >
-              👋
-            </motion.span>
+            <span className="decor-loop animate-wave inline-block origin-[70%_70%]">👋</span>
           </p>
 
           <h1
@@ -99,47 +73,26 @@ export function Hero() {
             <span className="block">Rafly</span>
             <span className="relative block">
               <span className="relative z-10">Kurahman</span>
-              <motion.span
-                className="absolute inset-x-0 bottom-1 -z-0 h-5 bg-primary sm:h-7"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
-                transition={{ duration: 0.9, ease: easeOutExpo, delay: 1 }}
-                style={{ originX: 0 }}
+              <span
+                className="animate-underline absolute inset-x-0 bottom-1 -z-0 h-5 origin-left bg-primary sm:h-7"
                 aria-hidden="true"
               />
             </span>
           </h1>
 
-          <div
-            className="animate-rise min-h-[3.6rem] w-full"
-            style={{ animationDelay: "0.2s" }}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={roles[roleIndex]}
-                initial={{ opacity: 0, y: 18, rotate: -2 }}
-                animate={{ opacity: 1, y: 0, rotate: 0 }}
-                exit={{ opacity: 0, y: -18, rotate: 2 }}
-                transition={{ duration: 0.4, ease: easeOutExpo }}
-                className={cn(
-                  "nb-border-thick inline-flex items-center gap-2.5 rounded-brutal px-4 py-3 font-heading text-lg font-black uppercase tracking-tight shadow-brutal-md sm:text-2xl",
-                  roleIndex === 0
-                    ? "bg-secondary text-ink"
-                    : roleIndex === 1
-                      ? "bg-blue text-ink"
-                      : "bg-green text-ink",
-                )}
-              >
-                {roleIndex === 0 ? (
-                  <Flame className="h-6 w-6" aria-hidden="true" />
-                ) : roleIndex === 1 ? (
-                  <HardHat className="h-6 w-6" aria-hidden="true" />
-                ) : (
-                  <Sparkles className="h-6 w-6" aria-hidden="true" />
-                )}
-                {roles[roleIndex]}
-              </motion.div>
-            </AnimatePresence>
+          <div className="animate-rise min-h-[3.6rem] w-full" style={{ animationDelay: "0.2s" }}>
+            {/* `key` memicu ulang animasi CSS setiap peran berganti,
+                menggantikan AnimatePresence agar tidak ada loop rAF. */}
+            <div
+              key={roleIndex}
+              className={cn(
+                "animate-role-in nb-border-thick inline-flex items-center gap-2.5 rounded-brutal px-4 py-3 font-heading text-lg font-black uppercase tracking-tight shadow-brutal-md sm:text-2xl",
+                roleStyles[roleIndex] ?? roleStyles[0],
+              )}
+            >
+              <RoleIcon className="h-6 w-6" aria-hidden="true" />
+              {roles[roleIndex]}
+            </div>
           </div>
 
           <p
@@ -205,11 +158,7 @@ export function Hero() {
             aria-hidden="true"
           />
 
-          <motion.div
-            animate={reduced ? undefined : { y: [0, -12, 0] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            className="nb-border-thick relative overflow-hidden rounded-brutal bg-primary"
-          >
+          <div className="decor-loop animate-float-photo nb-border-thick relative overflow-hidden rounded-brutal bg-primary">
             <div className="absolute inset-0 bg-dots opacity-40" aria-hidden="true" />
             <Image
               src={siteConfig.photo}
@@ -237,22 +186,18 @@ export function Hero() {
                 Welder
               </span>
             </div>
-          </motion.div>
+          </div>
 
           {/* Sticker melayang */}
-          <motion.div
-            animate={reduced ? undefined : { rotate: [0, 360] }}
-            transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
-            className="nb-border-thick absolute -left-6 -top-6 flex h-20 w-20 items-center justify-center rounded-full bg-surface shadow-brutal sm:-left-8 sm:-top-8 sm:h-24 sm:w-24"
+          <div
+            className="decor-loop animate-spin-slow nb-border-thick absolute -left-6 -top-6 flex h-20 w-20 items-center justify-center rounded-full bg-surface shadow-brutal sm:-left-8 sm:-top-8 sm:h-24 sm:w-24"
             aria-hidden="true"
           >
             <Flame className="h-8 w-8 text-secondary" />
-          </motion.div>
+          </div>
 
-          <motion.div
-            animate={reduced ? undefined : { y: [0, 14, 0], rotate: [-4, 4, -4] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="nb-border-thick absolute -bottom-7 -right-4 rounded-brutal bg-primary px-3.5 py-2.5 shadow-brutal-md sm:-right-8"
+          <div
+            className="decor-loop animate-float-badge nb-border-thick absolute -bottom-7 -right-4 rounded-brutal bg-primary px-3.5 py-2.5 shadow-brutal-md sm:-right-8"
             aria-hidden="true"
           >
             <p className="font-heading text-xs font-black uppercase leading-tight text-ink">
@@ -260,9 +205,9 @@ export function Hero() {
               <br />
               1F — 3G
             </p>
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Scroll indicator */}
       <button
@@ -275,17 +220,9 @@ export function Hero() {
         <span className="font-heading text-[0.65rem] font-extrabold uppercase tracking-[0.3em] text-muted">
           Scroll
         </span>
-        <motion.span
-          animate={reduced ? undefined : { y: [0, 9, 0] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-          className="nb-border-thick flex h-11 w-7 items-start justify-center rounded-full bg-surface p-1.5 shadow-brutal"
-        >
-          <motion.span
-            animate={reduced ? undefined : { y: [0, 12, 0], opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            className="h-2 w-2 rounded-full bg-secondary"
-          />
-        </motion.span>
+        <span className="decor-loop animate-scroll-shell nb-border-thick flex h-11 w-7 items-start justify-center rounded-full bg-surface p-1.5 shadow-brutal">
+          <span className="decor-loop animate-scroll-dot h-2 w-2 rounded-full bg-secondary" />
+        </span>
         <MousePointerClick
           className="h-4 w-4 text-muted opacity-0 transition-opacity group-hover:opacity-100"
           aria-hidden="true"

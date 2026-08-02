@@ -41,7 +41,6 @@
     color: var(--nb-fg);
     font-family: var(--font-inter), system-ui, sans-serif;
     overflow-x: hidden;
-    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
@@ -85,6 +84,18 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: #ff6b6b;
+  }
+
+  /*
+   * Animasi hias yang berjalan terus-menerus dimatikan pada layar kecil.
+   * Di ponsel kelas bawah setiap loop yang aktif membuat compositor bekerja
+   * sepanjang waktu dan membuat scroll terasa tersendat, sementara nilai
+   * visualnya kecil pada layar sesempit itu.
+   */
+  @media (max-width: 767px) {
+    .decor-loop {
+      animation: none !important;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -142,6 +153,193 @@
 
   .nb-link-underline:hover {
     background-size: 100% 3px;
+  }
+
+  /*
+   * Animasi masuk saat elemen tergulir ke layar.
+   * Kelas `is-visible` dipasang oleh IntersectionObserver (lihat `useReveal`),
+   * sisanya ditangani CSS sehingga tidak ada perhitungan per frame di JavaScript.
+   */
+  /* Disembunyikan hanya bila JavaScript aktif, supaya konten tetap terbaca
+     ketika skrip gagal dimuat maupun oleh crawler tanpa JavaScript. */
+  .js .reveal {
+    opacity: 0;
+  }
+
+  .reveal.is-visible {
+    animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--reveal-delay, 0s);
+  }
+
+  /* Status akhir setelah animasi selesai; melepas kendali animasi atas
+     properti transform sehingga efek hover kembali berfungsi. */
+  .reveal.reveal-done {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  /*
+   * Batang progres keahlian dan garis timeline: keduanya ikut menyala saat
+   * elemen induknya masuk viewport, jadi tidak perlu animasi berbasis scroll.
+   */
+  .js .progress-fill {
+    transform: scaleX(0);
+  }
+
+  .is-visible .progress-fill {
+    animation: progress-grow 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+  }
+
+  .js .timeline-fill {
+    transform: scaleY(0);
+  }
+
+  .is-visible .timeline-fill,
+  .timeline-fill.is-visible {
+    animation: timeline-grow 1.6s cubic-bezier(0.33, 1, 0.68, 1) both;
+  }
+
+  @keyframes progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes timeline-grow {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .progress-fill,
+    .js .timeline-fill {
+      transform: none;
+      animation: none;
+    }
+  }
+
+  /*
+   * Efek angkat memakai properti `translate`, bukan `transform`, agar tidak
+   * bertabrakan dengan animasi reveal. Dibungkus media query hover supaya
+   * perangkat sentuh tidak pernah menyimpan status hover yang menempel.
+   */
+  .nb-hover-lift {
+    transition:
+      translate 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .nb-hover-lift:hover {
+      translate: -4px -4px;
+    }
+  }
+
+  .nb-hover-lift:active {
+    translate: 2px 2px;
+  }
+
+  .reveal[data-reveal="pop"].is-visible {
+    animation-name: reveal-pop;
+    animation-duration: 0.5s;
+  }
+
+  .reveal[data-reveal="zoom"].is-visible {
+    animation-name: reveal-zoom;
+  }
+
+  .reveal[data-reveal="left"].is-visible {
+    animation-name: reveal-left;
+  }
+
+  .reveal[data-reveal="right"].is-visible {
+    animation-name: reveal-right;
+  }
+
+  .reveal[data-reveal="fade"].is-visible {
+    animation-name: reveal-fade;
+  }
+
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 44px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes reveal-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.82) rotate(-3deg);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes reveal-zoom {
+    from {
+      opacity: 0;
+      transform: scale(0.88);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes reveal-left {
+    from {
+      opacity: 0;
+      transform: translate3d(-56px, 0, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes reveal-right {
+    from {
+      opacity: 0;
+      transform: translate3d(56px, 0, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes reveal-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Tanpa JavaScript atau saat reduce-motion, konten tetap harus terlihat. */
+  @media (prefers-reduced-motion: reduce) {
+    .js .reveal {
+      opacity: 1;
+    }
+
+    .reveal.is-visible {
+      animation: none;
+    }
   }
 }
 

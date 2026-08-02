@@ -1,7 +1,7 @@
 "use client";
 
 import { Flame } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { siteConfig } from "@/lib/site";
 
@@ -13,16 +13,37 @@ import { siteConfig } from "@/lib/site";
  */
 export function LoadingScreen() {
   const [removed, setRemoved] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setRemoved(true), 950);
-    return () => window.clearTimeout(timeout);
+    const el = ref.current;
+    if (!el) return;
+
+    // Dilepas tepat setelah animasi keluar selesai, bukan setelah tenggat tetap.
+    // Timer yang dimulai saat hydration bisa meleset dari jadwal animasi CSS —
+    // bila elemen hilang saat animasi masih berjalan, layar sempat bergeser dan
+    // tercatat sebagai layout shift.
+    const finish = () => setRemoved(true);
+    // Animasi anak (bar progres) ikut menggelembung ke sini, jadi hanya animasi
+    // milik elemen ini sendiri yang boleh mengakhiri loading screen.
+    const onAnimationEnd = (event: AnimationEvent) => {
+      if (event.target === el) finish();
+    };
+    el.addEventListener("animationend", onAnimationEnd);
+
+    // Jaring pengaman bila animationend tidak pernah tiba (mis. reduce-motion).
+    const timeout = window.setTimeout(finish, 2000);
+    return () => {
+      el.removeEventListener("animationend", onAnimationEnd);
+      window.clearTimeout(timeout);
+    };
   }, []);
 
   if (removed) return null;
 
   return (
     <div
+      ref={ref}
       className="animate-loader-out fixed inset-0 z-[100] flex items-center justify-center bg-primary px-6"
       role="status"
       aria-live="polite"

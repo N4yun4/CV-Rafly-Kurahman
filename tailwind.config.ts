@@ -77,6 +77,49 @@ const config: Config = {
           "0%, 62%": { opacity: "1", transform: "translateY(0)" },
           "100%": { opacity: "0", transform: "translateY(-100%)" },
         },
+        // Animasi dekoratif berulang — semuanya hanya transform/opacity supaya
+        // dijalankan compositor, bukan main thread.
+        blob: {
+          "0%, 100%": { transform: "translate3d(0, 0, 0)", opacity: "0.5" },
+          "50%": { transform: "translate3d(0, -28px, 0)", opacity: "0.78" },
+        },
+        drift: {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
+          "50%": {
+            transform:
+              "translate3d(var(--dx, 0px), var(--dy, 0px), 0) rotate(var(--dr, 0deg))",
+          },
+        },
+        wave: {
+          "0%, 41%, 100%": { transform: "rotate(0deg)" },
+          "10%": { transform: "rotate(18deg)" },
+          "20%": { transform: "rotate(-8deg)" },
+          "30%": { transform: "rotate(18deg)" },
+        },
+        "float-photo": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0)" },
+          "50%": { transform: "translate3d(0, -12px, 0)" },
+        },
+        "float-badge": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) rotate(-4deg)" },
+          "50%": { transform: "translate3d(0, 14px, 0) rotate(4deg)" },
+        },
+        "scroll-shell": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0)" },
+          "50%": { transform: "translate3d(0, 9px, 0)" },
+        },
+        "scroll-dot": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0)", opacity: "1" },
+          "50%": { transform: "translate3d(0, 12px, 0)", opacity: "0.3" },
+        },
+        underline: {
+          from: { transform: "scaleX(0)" },
+          to: { transform: "scaleX(1)" },
+        },
+        "role-in": {
+          from: { opacity: "0", transform: "translateY(18px) rotate(-2deg)" },
+          to: { opacity: "1", transform: "none" },
+        },
       },
       animation: {
         marquee: "marquee 26s linear infinite",
@@ -89,6 +132,15 @@ const config: Config = {
         "page-in": "page-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) both",
         "loader-bar": "loader-bar 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "loader-out": "loader-out 0.85s cubic-bezier(0.76, 0, 0.24, 1) forwards",
+        blob: "blob 12s ease-in-out infinite",
+        drift: "drift 14s ease-in-out infinite",
+        wave: "wave 4.4s ease-in-out infinite",
+        "float-photo": "float-photo 7s ease-in-out infinite",
+        "float-badge": "float-badge 6s ease-in-out infinite",
+        "scroll-shell": "scroll-shell 1.6s ease-in-out infinite",
+        "scroll-dot": "scroll-dot 1.6s ease-in-out infinite",
+        underline: "underline 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1s both",
+        "role-in": "role-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both",
       },
       screens: {
         xs: "420px",

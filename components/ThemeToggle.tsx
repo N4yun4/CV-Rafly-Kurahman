@@ -1,45 +1,44 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
+/**
+ * Tombol ganti tema. Kedua ikon selalu ada di DOM dan hanya digeser dengan
+ * transisi CSS, sehingga tidak perlu pustaka animasi untuk pergantiannya.
+ */
 export function ThemeToggle({ className }: { className?: string }) {
-  const { theme, toggleTheme, mounted } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
 
   return (
-    <motion.button
+    <button
       type="button"
       onClick={toggleTheme}
-      whileHover={{ x: -2, y: -2 }}
-      whileTap={{ scale: 0.92 }}
       aria-label={isDark ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
       aria-pressed={isDark}
       className={cn(
-        "nb-border-thick relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-brutal shadow-brutal transition-shadow hover:shadow-brutal-md",
+        "nb-border-thick nb-hover-lift relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-brutal shadow-brutal hover:shadow-brutal-md",
         isDark ? "bg-blue text-ink" : "bg-primary text-ink",
         className,
       )}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={mounted ? theme : "placeholder"}
-          initial={{ y: 18, opacity: 0, rotate: -45 }}
-          animate={{ y: 0, opacity: 1, rotate: 0 }}
-          exit={{ y: -18, opacity: 0, rotate: 45 }}
-          transition={{ duration: 0.25 }}
-          className="flex items-center justify-center"
-        >
-          {isDark ? (
-            <Moon className="h-5 w-5" aria-hidden="true" />
-          ) : (
-            <Sun className="h-5 w-5" aria-hidden="true" />
-          )}
-        </motion.span>
-      </AnimatePresence>
-    </motion.button>
+      <Sun
+        className={cn(
+          "absolute h-5 w-5 transition-[opacity,transform] duration-300",
+          isDark ? "-translate-y-5 rotate-45 opacity-0" : "translate-y-0 rotate-0 opacity-100",
+        )}
+        aria-hidden="true"
+      />
+      <Moon
+        className={cn(
+          "absolute h-5 w-5 transition-[opacity,transform] duration-300",
+          isDark ? "translate-y-0 rotate-0 opacity-100" : "translate-y-5 -rotate-45 opacity-0",
+        )}
+        aria-hidden="true"
+      />
+    </button>
   );
 }

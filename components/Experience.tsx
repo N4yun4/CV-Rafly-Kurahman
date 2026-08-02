@@ -1,12 +1,9 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Barcode, Boxes, Briefcase, CalendarDays, CheckCircle2, MapPin, Warehouse } from "lucide-react";
 
 import { Card } from "@/components/ui/Card";
+import { Reveal } from "@/components/ui/Reveal";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { experiences } from "@/lib/data";
-import { slideLeft, slideUp, staggerContainer, viewportOnce } from "@/lib/motion";
 import { cn, colorMap } from "@/lib/utils";
 
 export function Experience() {
@@ -30,18 +27,11 @@ export function Experience() {
             aria-hidden="true"
           />
 
-          <motion.ol
-            variants={staggerContainer(0.14)}
-            initial="hidden"
-            whileInView="show"
-            viewport={viewportOnce}
-            className="flex flex-col gap-8"
-          >
+          <ol className="flex flex-col gap-8">
             {experiences.map((item) => (
-              <motion.li key={item.role} variants={slideUp} className="relative sm:pl-[72px]">
+              <li key={item.role} className="relative sm:pl-[72px]">
                 {/* Titik timeline */}
-                <motion.span
-                  variants={slideUp}
+                <span
                   className={cn(
                     "nb-border-thick absolute left-0 top-2 hidden h-14 w-14 items-center justify-center rounded-brutal shadow-brutal sm:flex",
                     colorMap[item.color],
@@ -49,9 +39,9 @@ export function Experience() {
                   aria-hidden="true"
                 >
                   <Warehouse className="h-6 w-6" />
-                </motion.span>
+                </span>
 
-                <Card className="overflow-hidden">
+                <Card reveal="up" className="overflow-hidden">
                   <div className="nb-border-thick flex flex-wrap items-start justify-between gap-3 border-x-0 border-t-0 bg-primary px-5 py-4 text-ink sm:px-6">
                     <div className="min-w-0">
                       <h3 className="font-heading text-2xl font-black uppercase leading-tight sm:text-3xl">
@@ -82,10 +72,12 @@ export function Experience() {
                         Tanggung Jawab
                       </h4>
                       <ul className="mt-3 flex flex-col gap-3">
-                        {item.responsibilities.map((task) => (
-                          <motion.li
+                        {item.responsibilities.map((task, index) => (
+                          <Reveal
+                            as="li"
                             key={task}
-                            variants={slideLeft}
+                            variant="left"
+                            delay={index * 0.08}
                             className="flex items-start gap-3 text-sm leading-relaxed text-body sm:text-base"
                           >
                             <CheckCircle2
@@ -93,7 +85,7 @@ export function Experience() {
                               aria-hidden="true"
                             />
                             {task}
-                          </motion.li>
+                          </Reveal>
                         ))}
                       </ul>
                     </div>
@@ -108,7 +100,7 @@ export function Experience() {
                           <li
                             key={tool}
                             className={cn(
-                              "nb-border rounded-brutal px-3 py-1.5 font-heading text-xs font-extrabold uppercase shadow-brutal transition-transform hover:-translate-y-1",
+                              "nb-border nb-hover-lift rounded-brutal px-3 py-1.5 font-heading text-xs font-extrabold uppercase shadow-brutal",
                               [colorMap.blue, colorMap.green, colorMap.secondary, colorMap.purple][
                                 index % 4
                               ],
@@ -121,9 +113,9 @@ export function Experience() {
                     </div>
                   </div>
                 </Card>
-              </motion.li>
+              </li>
             ))}
-          </motion.ol>
+          </ol>
         </div>
       </div>
     </section>

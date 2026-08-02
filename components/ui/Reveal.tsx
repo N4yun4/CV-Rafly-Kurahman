@@ -1,49 +1,46 @@
 "use client";
 
-import { motion, type Variants } from "framer-motion";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
-import { fadeIn, slideLeft, slideRight, slideUp, viewportOnce, zoomIn } from "@/lib/motion";
+import { useReveal } from "@/hooks/useReveal";
+import { cn } from "@/lib/utils";
 
-type RevealVariant = "up" | "left" | "right" | "fade" | "zoom";
-
-const variantMap: Record<RevealVariant, Variants> = {
-  up: slideUp,
-  left: slideLeft,
-  right: slideRight,
-  fade: fadeIn,
-  zoom: zoomIn,
-};
+export type RevealVariant = "up" | "left" | "right" | "fade" | "zoom" | "pop";
 
 export interface RevealProps {
   children: ReactNode;
   variant?: RevealVariant;
+  /** Jeda animasi dalam detik — dipakai untuk efek berurutan pada daftar. */
   delay?: number;
   className?: string;
-  as?: "div" | "section" | "li" | "span";
+  as?: "div" | "section" | "li" | "span" | "ul";
+  style?: CSSProperties;
 }
 
-/** Pembungkus animasi scroll-reveal yang dapat dipakai ulang di seluruh section. */
+/**
+ * Pembungkus animasi scroll-reveal yang dipakai ulang di seluruh section.
+ * Animasi ditangani CSS; komponen ini hanya memasang penanda saat elemen
+ * memasuki viewport.
+ */
 export function Reveal({
   children,
   variant = "up",
   delay = 0,
   className,
-  as = "div",
+  as: Tag = "div",
+  style,
 }: RevealProps) {
-  const MotionTag =
-    as === "section" ? motion.section : as === "li" ? motion.li : as === "span" ? motion.span : motion.div;
+  const ref = useReveal<HTMLElement>();
 
   return (
-    <MotionTag
-      className={className}
-      variants={variantMap[variant]}
-      initial="hidden"
-      whileInView="show"
-      viewport={viewportOnce}
-      transition={{ delay }}
+    <Tag
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ref={ref as any}
+      data-reveal={variant}
+      className={cn("reveal", className)}
+      style={delay ? { ...style, "--reveal-delay": `${delay}s` } as CSSProperties : style}
     >
       {children}
-    </MotionTag>
+    </Tag>
   );
 }

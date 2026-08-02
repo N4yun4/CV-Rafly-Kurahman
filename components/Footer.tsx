@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ArrowUp, Mail, MapPin, Phone } from "lucide-react";
 
 import { navItems } from "@/lib/data";
@@ -47,18 +46,16 @@ export function Footer() {
                 const Icon = contact.icon;
                 return (
                   <li key={contact.label}>
-                    <motion.a
+                    <a
                       href={contact.href}
-                      whileHover={{ x: -2, y: -2 }}
-                      whileTap={{ scale: 0.94 }}
                       className={cn(
-                        "nb-border inline-flex items-center gap-2 rounded-brutal px-3.5 py-2.5 font-heading text-xs font-extrabold uppercase tracking-wide text-ink shadow-brutal transition-shadow hover:shadow-brutal-md",
+                        "nb-border nb-hover-lift inline-flex items-center gap-2 rounded-brutal px-3.5 py-2.5 font-heading text-xs font-extrabold uppercase tracking-wide text-ink shadow-brutal hover:shadow-brutal-md",
                         contact.color,
                       )}
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />
                       {contact.label}
-                    </motion.a>
+                    </a>
                   </li>
                 );
               })}
@@ -110,16 +107,14 @@ export function Footer() {
               </li>
             </ul>
 
-            <motion.button
+            <button
               type="button"
               onClick={() => scrollToSection("#beranda", 0)}
-              whileHover={{ x: -2, y: -2 }}
-              whileTap={{ scale: 0.96 }}
-              className="nb-border mt-5 inline-flex items-center gap-2 rounded-brutal bg-primary px-4 py-2.5 font-heading text-xs font-extrabold uppercase tracking-widest text-ink shadow-brutal transition-shadow hover:shadow-brutal-md"
+              className="nb-border nb-hover-lift mt-5 inline-flex items-center gap-2 rounded-brutal bg-primary px-4 py-2.5 font-heading text-xs font-extrabold uppercase tracking-widest text-ink shadow-brutal hover:shadow-brutal-md"
             >
               <ArrowUp className="h-4 w-4" aria-hidden="true" />
               Back To Top
-            </motion.button>
+            </button>
           </div>
         </div>
 

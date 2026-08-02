@@ -1,73 +1,104 @@
-"use client";
-
-import { motion } from "framer-motion";
-
-import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
+import type { CSSProperties } from "react";
 
 interface Shape {
   id: string;
   className: string;
-  style: React.CSSProperties;
-  duration: number;
-  delay: number;
-  drift: [number, number];
-  rotate: number;
+  style: CSSProperties;
 }
 
+/**
+ * Setiap shape memakai keyframe CSS yang sama (`drift`) dengan arah dan durasi
+ * berbeda lewat custom property, sehingga tidak perlu satu animasi per elemen.
+ */
 const shapes: Shape[] = [
   {
     id: "square-1",
     className: "nb-border-thick bg-primary",
-    style: { top: "12%", left: "6%", width: 78, height: 78 },
-    duration: 13,
-    delay: 0,
-    drift: [-26, 18],
-    rotate: 14,
+    style: {
+      top: "12%",
+      left: "6%",
+      width: 78,
+      height: 78,
+      "--dx": "18px",
+      "--dy": "-26px",
+      "--dr": "14deg",
+      animationDuration: "13s",
+    } as CSSProperties,
   },
   {
     id: "circle-1",
     className: "nb-border-thick rounded-full bg-secondary",
-    style: { top: "24%", right: "8%", width: 96, height: 96 },
-    duration: 16,
-    delay: 1.2,
-    drift: [24, -22],
-    rotate: -12,
+    style: {
+      top: "24%",
+      right: "8%",
+      width: 96,
+      height: 96,
+      "--dx": "-22px",
+      "--dy": "24px",
+      "--dr": "-12deg",
+      animationDuration: "16s",
+      animationDelay: "-1.2s",
+    } as CSSProperties,
   },
   {
     id: "square-2",
     className: "nb-border-thick bg-blue",
-    style: { top: "58%", left: "4%", width: 56, height: 56 },
-    duration: 11,
-    delay: 0.6,
-    drift: [18, -20],
-    rotate: -18,
+    style: {
+      top: "58%",
+      left: "4%",
+      width: 56,
+      height: 56,
+      "--dx": "-20px",
+      "--dy": "18px",
+      "--dr": "-18deg",
+      animationDuration: "11s",
+      animationDelay: "-0.6s",
+    } as CSSProperties,
   },
   {
     id: "circle-2",
     className: "nb-border-thick rounded-full bg-green",
-    style: { top: "72%", right: "12%", width: 64, height: 64 },
-    duration: 15,
-    delay: 2,
-    drift: [-20, 24],
-    rotate: 16,
+    style: {
+      top: "72%",
+      right: "12%",
+      width: 64,
+      height: 64,
+      "--dx": "24px",
+      "--dy": "-20px",
+      "--dr": "16deg",
+      animationDuration: "15s",
+      animationDelay: "-2s",
+    } as CSSProperties,
   },
   {
     id: "square-3",
     className: "nb-border-thick bg-purple",
-    style: { top: "42%", right: "26%", width: 44, height: 44 },
-    duration: 18,
-    delay: 0.9,
-    drift: [22, 20],
-    rotate: 24,
+    style: {
+      top: "42%",
+      right: "26%",
+      width: 44,
+      height: 44,
+      "--dx": "20px",
+      "--dy": "22px",
+      "--dr": "24deg",
+      animationDuration: "18s",
+      animationDelay: "-0.9s",
+    } as CSSProperties,
   },
   {
     id: "stripe-1",
     className: "nb-border-thick bg-stripes opacity-40",
-    style: { top: "86%", left: "22%", width: 110, height: 44 },
-    duration: 14,
-    delay: 1.6,
-    drift: [-18, -16],
-    rotate: -8,
+    style: {
+      top: "86%",
+      left: "22%",
+      width: 110,
+      height: 44,
+      "--dx": "-16px",
+      "--dy": "-18px",
+      "--dr": "-8deg",
+      animationDuration: "14s",
+      animationDelay: "-1.6s",
+    } as CSSProperties,
   },
 ];
 
@@ -86,52 +117,33 @@ export function StaticBackground() {
 
 /**
  * Lapisan dekoratif bergerak: blob warna dan shape mengambang.
- * Dimuat hanya di sisi klien supaya tidak menambah beban render awal,
- * dan berhenti bergerak saat pengguna memilih reduce-motion.
+ *
+ * Hanya dipasang pada perangkat yang sanggup (lihat `useDecorativeMotion`) dan
+ * seluruh animasinya berbasis CSS — hanya `transform` dan `opacity` — sehingga
+ * dijalankan compositor tanpa membebani main thread. Blob sengaja tidak memakai
+ * animasi `scale` karena mengubah skala elemen ber-blur memaksa raster ulang
+ * setiap frame.
  */
 export function AnimatedBackground() {
-  const reduced = usePrefersReducedMotion();
-
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
       {/* Blob warna lembut */}
-      <motion.div
-        className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-primary/25 blur-3xl"
-        animate={reduced ? undefined : { scale: [1, 1.18, 1], opacity: [0.5, 0.75, 0.5] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+      <div className="animate-blob absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-primary/25 blur-3xl" />
+      <div
+        className="animate-blob absolute -right-40 top-1/3 h-[460px] w-[460px] rounded-full bg-blue/20 blur-3xl"
+        style={{ animationDuration: "15s", animationDelay: "-5s" }}
       />
-      <motion.div
-        className="absolute -right-40 top-1/3 h-[460px] w-[460px] rounded-full bg-blue/20 blur-3xl"
-        animate={reduced ? undefined : { scale: [1.1, 1, 1.1], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute -bottom-40 left-1/3 h-[400px] w-[400px] rounded-full bg-secondary/20 blur-3xl"
-        animate={reduced ? undefined : { scale: [1, 1.15, 1], opacity: [0.45, 0.7, 0.45] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      <div
+        className="animate-blob absolute -bottom-40 left-1/3 h-[400px] w-[400px] rounded-full bg-secondary/20 blur-3xl"
+        style={{ animationDuration: "18s", animationDelay: "-9s" }}
       />
 
       {/* Shape mengambang */}
       {shapes.map((shape) => (
-        <motion.div
+        <div
           key={shape.id}
-          className={`absolute hidden opacity-70 md:block ${shape.className}`}
+          className={`animate-drift absolute opacity-70 ${shape.className}`}
           style={shape.style}
-          animate={
-            reduced
-              ? undefined
-              : {
-                  y: [0, shape.drift[0], 0],
-                  x: [0, shape.drift[1], 0],
-                  rotate: [0, shape.rotate, 0],
-                }
-          }
-          transition={{
-            duration: shape.duration,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: shape.delay,
-          }}
         />
       ))}
 

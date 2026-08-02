@@ -107,9 +107,13 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
 };
 
-/** Script anti-flash: menerapkan tema sebelum React hydrate. */
+/**
+ * Script anti-flash: menerapkan tema sebelum React hydrate, sekaligus menandai
+ * bahwa JavaScript aktif. Penanda `js` dipakai CSS untuk menyembunyikan elemen
+ * scroll-reveal — tanpa penanda ini konten akan hilang bila skrip gagal dimuat.
+ */
 const themeScript = `
-(function(){try{var k='rafly-portfolio-theme';var s=localStorage.getItem(k);var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var t=s||(d?'dark':'light');if(t==='dark'){document.documentElement.classList.add('dark');}document.documentElement.style.colorScheme=t;}catch(e){}})();
+(function(){var e=document.documentElement;e.classList.add('js');try{var k='rafly-portfolio-theme';var s=localStorage.getItem(k);var d=window.matchMedia('(prefers-color-scheme: dark)').matches;var t=s||(d?'dark':'light');if(t==='dark'){e.classList.add('dark');}e.style.colorScheme=t;}catch(err){}})();
 `;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

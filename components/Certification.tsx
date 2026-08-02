@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Award, BadgeCheck, Clock3, ShieldCheck, Stamp } from "lucide-react";
 
 import { Badge } from "@/components/ui/Badge";
@@ -8,7 +5,6 @@ import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { certifications } from "@/lib/data";
-import { staggerContainer, viewportOnce } from "@/lib/motion";
 import { cn, colorMap } from "@/lib/utils";
 
 const processSteps = [
@@ -31,13 +27,7 @@ export function Certification() {
           icon={Award}
         />
 
-        <motion.div
-          variants={staggerContainer(0.12)}
-          initial="hidden"
-          whileInView="show"
-          viewport={viewportOnce}
-          className="grid gap-6 lg:grid-cols-[1.25fr_1fr]"
-        >
+        <div className="grid gap-6 lg:grid-cols-[1.25fr_1fr]">
           {certifications.map((cert) => (
             <Reveal key={cert.title} variant="right">
               <Card className="relative h-full overflow-hidden" hover={false}>
@@ -55,13 +45,9 @@ export function Certification() {
                   )}
                 >
                   <div className="absolute inset-0 bg-dots opacity-30" aria-hidden="true" />
-                  <motion.span
-                    animate={{ rotate: [0, -6, 6, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    className="nb-border-thick relative flex h-16 w-16 shrink-0 items-center justify-center rounded-brutal bg-surface text-body shadow-brutal"
-                  >
+                  <span className="nb-border-thick relative flex h-16 w-16 shrink-0 items-center justify-center rounded-brutal bg-surface text-body shadow-brutal">
                     <Stamp className="h-8 w-8" aria-hidden="true" />
-                  </motion.span>
+                  </span>
                   <div className="relative min-w-0 pr-16">
                     <h3 className="font-heading text-2xl font-black uppercase leading-tight sm:text-3xl">
                       {cert.title}
@@ -84,7 +70,7 @@ export function Certification() {
 
                   {/* Progres proses sertifikasi */}
                   <ol className="flex flex-col gap-3">
-                    {processSteps.map((step, index) => (
+                    {processSteps.map((step) => (
                       <li key={step.label} className="flex items-center gap-3">
                         <span
                           className={cn(
@@ -103,16 +89,12 @@ export function Certification() {
                             {step.label}
                           </p>
                           <div className="nb-border mt-1 h-2.5 w-full overflow-hidden rounded-brutal bg-surface">
-                            <motion.div
-                              className={cn("h-full", step.done ? "bg-green" : "bg-primary")}
-                              initial={{ width: "0%" }}
-                              whileInView={{ width: step.done ? "100%" : "65%" }}
-                              viewport={{ once: true, amount: 0.6 }}
-                              transition={{
-                                duration: 0.9,
-                                delay: 0.12 * index,
-                                ease: [0.16, 1, 0.3, 1],
-                              }}
+                            <div
+                              className={cn(
+                                "progress-fill h-full origin-left",
+                                step.done ? "bg-green" : "bg-primary",
+                              )}
+                              style={{ width: step.done ? "100%" : "65%" }}
                             />
                           </div>
                         </div>
@@ -126,14 +108,13 @@ export function Certification() {
 
           {/* Kartu pratinjau sertifikat */}
           <Reveal variant="left">
-            <Card className="flex h-full flex-col items-center justify-center gap-5 bg-primary p-8 text-ink" hover={false}>
+            <Card
+              className="flex h-full flex-col items-center justify-center gap-5 bg-primary p-8 text-ink"
+              hover={false}
+            >
               <div className="absolute inset-0 bg-dots opacity-30" aria-hidden="true" />
 
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="nb-border-thick relative flex aspect-[4/3] w-full max-w-xs flex-col items-center justify-center gap-3 rounded-brutal bg-surface p-6 text-center shadow-brutal-lg"
-              >
+              <div className="decor-loop animate-float-photo nb-border-thick relative flex aspect-[4/3] w-full max-w-xs flex-col items-center justify-center gap-3 rounded-brutal bg-surface p-6 text-center shadow-brutal-lg">
                 <div className="nb-border flex h-16 w-16 items-center justify-center rounded-full bg-primary">
                   <Award className="h-8 w-8 text-ink" aria-hidden="true" />
                 </div>
@@ -150,7 +131,7 @@ export function Certification() {
                 <span className="nb-border mt-1 rounded-brutal bg-secondary px-3 py-1 font-heading text-[0.65rem] font-black uppercase tracking-widest text-ink">
                   Coming Soon
                 </span>
-              </motion.div>
+              </div>
 
               <p className="relative max-w-sm text-center text-sm font-semibold leading-relaxed">
                 Dokumen sertifikat akan ditampilkan di halaman ini segera setelah proses penerbitan
@@ -158,7 +139,7 @@ export function Certification() {
               </p>
             </Card>
           </Reveal>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

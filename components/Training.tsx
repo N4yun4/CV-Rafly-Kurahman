@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { Flame, Layers, Sparkles } from "lucide-react";
 
 import { WeldIllustration } from "@/components/illustrations/WeldIllustration";
@@ -8,7 +5,6 @@ import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { trainingExtras, trainingModules, trainingProgram } from "@/lib/data";
-import { popIn, staggerContainer, viewportOnce } from "@/lib/motion";
 import { cn, colorMap } from "@/lib/utils";
 
 export function Training() {
@@ -63,19 +59,9 @@ export function Training() {
 
               <div className="relative flex items-center justify-center overflow-hidden bg-primary p-8">
                 <div className="absolute inset-0 bg-dots opacity-40" aria-hidden="true" />
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="relative w-full max-w-[240px]"
-                >
+                <div className="decor-loop animate-float-photo relative w-full max-w-[240px]">
                   <WeldIllustration code="3G" />
-                </motion.div>
-                <motion.span
-                  animate={{ scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute right-6 top-6 h-16 w-16 rounded-full bg-secondary/60 blur-xl"
-                  aria-hidden="true"
-                />
+                </div>
               </div>
             </div>
           </Card>
@@ -88,18 +74,13 @@ export function Training() {
             Materi Posisi Pengelasan
           </h3>
 
-          <motion.ul
-            variants={staggerContainer(0.07)}
-            initial="hidden"
-            whileInView="show"
-            viewport={viewportOnce}
-            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {trainingModules.map((module) => (
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {trainingModules.map((module, index) => (
               <Card
                 key={module.code}
                 as="li"
-                variants={popIn}
+                reveal="pop"
+                delay={Math.min(index, 5) * 0.06}
                 className="group flex flex-col overflow-hidden"
               >
                 <div
@@ -125,21 +106,21 @@ export function Training() {
                 </div>
               </Card>
             ))}
-          </motion.ul>
+          </ul>
         </div>
 
         {/* Materi pendukung */}
-        <motion.ul
-          variants={staggerContainer(0.09)}
-          initial="hidden"
-          whileInView="show"
-          viewport={viewportOnce}
-          className="grid gap-5 md:grid-cols-3"
-        >
-          {trainingExtras.map((extra) => {
+        <ul className="grid gap-5 md:grid-cols-3">
+          {trainingExtras.map((extra, index) => {
             const Icon = extra.icon;
             return (
-              <Card key={extra.title} as="li" variants={popIn} className="flex flex-col gap-3 p-6">
+              <Card
+                key={extra.title}
+                as="li"
+                reveal="pop"
+                delay={index * 0.08}
+                className="flex flex-col gap-3 p-6"
+              >
                 <span
                   className={cn(
                     "nb-border flex h-14 w-14 items-center justify-center rounded-brutal shadow-brutal",
@@ -155,7 +136,7 @@ export function Training() {
               </Card>
             );
           })}
-        </motion.ul>
+        </ul>
       </div>
     </section>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { Download, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -12,14 +11,32 @@ import { cn, scrollToSection } from "@/lib/utils";
 
 const sectionIds = navItems.map((item) => item.href.replace("#", ""));
 
+/**
+ * Navigasi utama.
+ *
+ * Seluruh animasinya — panel menu, overlay, dan penanda menu aktif — memakai
+ * transisi CSS. Menu mobile tetap berada di DOM dan hanya digeser, sehingga
+ * membuka/menutupnya tidak menuntut pekerjaan berat di perangkat lambat.
+ */
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const active = useActiveSection(sectionIds);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
+    let ticking = false;
+    const evaluate = () => {
+      ticking = false;
+      const next = window.scrollY > 24;
+      setScrolled((prev) => (prev === next ? prev : next));
+    };
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(evaluate);
+    };
+
+    evaluate();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -46,15 +63,7 @@ export function Navbar() {
 
   return (
     <>
-      <motion.header
-        initial={{ y: -110 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-        className={cn(
-          "fixed inset-x-0 top-1.5 z-[80] px-3 sm:px-5",
-          scrolled ? "py-2" : "py-3",
-        )}
-      >
+      <header className={cn("fixed inset-x-0 top-1.5 z-[80] px-3 sm:px-5", scrolled ? "py-2" : "py-3")}>
         <nav
           aria-label="Navigasi utama"
           className={cn(
@@ -66,7 +75,7 @@ export function Navbar() {
             type="button"
             onClick={() => handleNav("#beranda")}
             className="group flex shrink-0 items-center gap-2.5"
-            title="Kembali ke beranda"
+            aria-label="Kembali ke beranda"
           >
             <span className="nb-border flex h-10 w-10 items-center justify-center rounded-brutal bg-primary font-heading text-lg font-black text-ink shadow-brutal transition-transform duration-200 group-hover:-rotate-6">
               RK
@@ -86,20 +95,16 @@ export function Navbar() {
                     type="button"
                     onClick={() => handleNav(item.href)}
                     aria-current={isActive ? "true" : undefined}
+                    /* Border transparan saat tidak aktif menjaga lebar tombol
+                       tetap sama, sehingga menu tidak bergeser saat berpindah. */
                     className={cn(
-                      "relative rounded-brutal px-3 py-2 font-heading text-sm font-bold uppercase tracking-wide transition-opacity",
-                      isActive ? "text-ink" : "text-body hover:opacity-70",
+                      "nb-border rounded-brutal px-3 py-2 font-heading text-sm font-bold uppercase tracking-wide transition-colors duration-200",
+                      isActive
+                        ? "bg-primary text-ink"
+                        : "border-transparent text-body hover:opacity-70",
                     )}
                   >
-                    {isActive ? (
-                      <motion.span
-                        layoutId="nav-active-pill"
-                        className="nb-border absolute inset-0 rounded-brutal bg-primary"
-                        transition={{ type: "spring", stiffness: 340, damping: 28 }}
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    <span className="relative">{item.label}</span>
+                    {item.label}
                   </button>
                 </li>
               );
@@ -110,7 +115,7 @@ export function Navbar() {
             <a
               href={siteConfig.cvPath}
               download
-              className="nb-border-thick hidden items-center gap-2 rounded-brutal bg-secondary px-4 py-2.5 font-heading text-sm font-bold uppercase text-ink shadow-brutal transition-all duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md md:inline-flex"
+              className="nb-border-thick nb-hover-lift hidden items-center gap-2 rounded-brutal bg-secondary px-4 py-2.5 font-heading text-sm font-bold uppercase text-ink shadow-brutal hover:shadow-brutal-md md:inline-flex"
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               CV
@@ -134,80 +139,76 @@ export function Navbar() {
             </button>
           </div>
         </nav>
-      </motion.header>
+      </header>
 
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            id="mobile-menu"
-            key="mobile-menu"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[75] lg:hidden"
+      {/* Overlay + panel menu mobile */}
+      <div
+        className={cn(
+          "fixed inset-0 z-[75] lg:hidden",
+          open ? "visible" : "invisible delay-300",
+        )}
+      >
+        <button
+          type="button"
+          aria-label="Tutup menu"
+          tabIndex={open ? 0 : -1}
+          onClick={() => setOpen(false)}
+          className={cn(
+            "absolute inset-0 h-full w-full bg-ink/50 transition-opacity duration-300",
+            open ? "opacity-100" : "opacity-0",
+          )}
+        />
+
+        <nav
+          id="mobile-menu"
+          aria-label="Navigasi mobile"
+          aria-hidden={!open}
+          className={cn(
+            "nb-border-thick absolute right-0 top-0 flex h-full w-[86%] max-w-sm flex-col gap-6 overflow-y-auto bg-canvas px-6 pb-10 pt-24 transition-transform duration-300 ease-out",
+            open ? "translate-x-0" : "translate-x-full",
+          )}
+        >
+          <p className="font-heading text-xs font-extrabold uppercase tracking-[0.3em] text-muted">
+            Menu
+          </p>
+
+          <ul className="flex flex-col gap-3">
+            {navItems.map((item, index) => {
+              const id = item.href.replace("#", "");
+              const isActive = active === id;
+              return (
+                <li key={item.href}>
+                  <button
+                    type="button"
+                    tabIndex={open ? 0 : -1}
+                    onClick={() => handleNav(item.href)}
+                    className={cn(
+                      "nb-border-thick nb-hover-lift flex w-full items-center justify-between rounded-brutal px-4 py-3.5 text-left font-heading text-lg font-bold uppercase shadow-brutal hover:shadow-brutal-md",
+                      isActive ? "bg-primary text-ink" : "bg-surface text-body",
+                    )}
+                  >
+                    {item.label}
+                    <span className="font-heading text-sm text-muted">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <a
+            href={siteConfig.cvPath}
+            download
+            tabIndex={open ? 0 : -1}
+            onClick={() => setOpen(false)}
+            className="nb-border-thick mt-2 inline-flex items-center justify-center gap-2 rounded-brutal bg-secondary px-5 py-4 font-heading text-base font-bold uppercase text-ink shadow-brutal-md"
           >
-            <button
-              type="button"
-              aria-label="Tutup menu"
-              onClick={() => setOpen(false)}
-              className="absolute inset-0 h-full w-full bg-ink/50 backdrop-blur-sm"
-            />
-
-            <motion.nav
-              aria-label="Navigasi mobile"
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 260, damping: 30 }}
-              className="nb-border-thick absolute right-0 top-0 flex h-full w-[86%] max-w-sm flex-col gap-6 overflow-y-auto bg-canvas px-6 pb-10 pt-24"
-            >
-              <p className="font-heading text-xs font-extrabold uppercase tracking-[0.3em] text-muted">
-                Menu
-              </p>
-
-              <ul className="flex flex-col gap-3">
-                {navItems.map((item, index) => {
-                  const id = item.href.replace("#", "");
-                  const isActive = active === id;
-                  return (
-                    <motion.li
-                      key={item.href}
-                      initial={{ opacity: 0, x: 40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.06 * index + 0.1 }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleNav(item.href)}
-                        className={cn(
-                          "nb-border-thick flex w-full items-center justify-between rounded-brutal px-4 py-3.5 text-left font-heading text-lg font-bold uppercase shadow-brutal transition-all hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-md",
-                          isActive ? "bg-primary text-ink" : "bg-surface text-body",
-                        )}
-                      >
-                        {item.label}
-                        <span className="font-heading text-sm text-muted">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                      </button>
-                    </motion.li>
-                  );
-                })}
-              </ul>
-
-              <a
-                href={siteConfig.cvPath}
-                download
-                onClick={() => setOpen(false)}
-                className="nb-border-thick mt-2 inline-flex items-center justify-center gap-2 rounded-brutal bg-secondary px-5 py-4 font-heading text-base font-bold uppercase text-ink shadow-brutal-md"
-              >
-                <Download className="h-5 w-5" aria-hidden="true" />
-                Download CV
-              </a>
-            </motion.nav>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+            <Download className="h-5 w-5" aria-hidden="true" />
+            Download CV
+          </a>
+        </nav>
+      </div>
     </>
   );
 }

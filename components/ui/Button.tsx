@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -40,6 +37,12 @@ export interface ButtonProps {
   fullWidth?: boolean;
 }
 
+/**
+ * Tombol Neubrutalism.
+ *
+ * Interaksi hover dan tekan sepenuhnya memakai CSS sehingga tombol tetap ringan
+ * dan tidak memerlukan JavaScript animasi apa pun saat dirender.
+ */
 export function Button({
   children,
   variant = "primary",
@@ -56,7 +59,7 @@ export function Button({
   fullWidth,
 }: ButtonProps) {
   const classes = cn(
-    "nb-border-thick group relative inline-flex items-center justify-center gap-2.5 rounded-brutal font-heading font-bold uppercase tracking-wide shadow-brutal-md transition-shadow duration-200 hover:shadow-brutal-lg",
+    "nb-border-thick nb-hover-lift group relative inline-flex items-center justify-center gap-2.5 rounded-brutal font-heading font-bold uppercase tracking-wide shadow-brutal-md hover:shadow-brutal-lg",
     variantClasses[variant],
     sizeClasses[size],
     fullWidth && "w-full",
@@ -76,15 +79,9 @@ export function Button({
     </>
   );
 
-  const motionProps = {
-    whileHover: { x: -3, y: -3 },
-    whileTap: { x: 2, y: 2, scale: 0.98 },
-    transition: { type: "spring" as const, stiffness: 420, damping: 22 },
-  };
-
   if (href) {
     return (
-      <motion.a
+      <a
         href={href}
         onClick={onClick}
         aria-label={ariaLabel}
@@ -92,22 +89,15 @@ export function Button({
         download={download}
         target={external ? "_blank" : undefined}
         rel={external ? "noopener noreferrer" : undefined}
-        {...motionProps}
       >
         {content}
-      </motion.a>
+      </a>
     );
   }
 
   return (
-    <motion.button
-      type={type}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      className={classes}
-      {...motionProps}
-    >
+    <button type={type} onClick={onClick} aria-label={ariaLabel} className={classes}>
       {content}
-    </motion.button>
+    </button>
   );
 }

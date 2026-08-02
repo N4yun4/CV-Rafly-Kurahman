@@ -1,16 +1,34 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
 
-/** Tombol kembali ke atas yang muncul setelah pengguna menggulir. */
+/**
+ * Tombol kembali ke atas yang muncul setelah pengguna menggulir.
+ *
+ * Listener scroll hanya mengubah state ketika ambang batas benar-benar
+ * terlampaui, jadi menggulir tidak memicu render ulang berkali-kali.
+ * Animasi muncul/hilang ditangani transisi CSS.
+ */
 export function BackToTop() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 600);
-    onScroll();
+    let ticking = false;
+
+    const evaluate = () => {
+      ticking = false;
+      const shouldShow = window.scrollY > 600;
+      setVisible((prev) => (prev === shouldShow ? prev : shouldShow));
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(evaluate);
+    };
+
+    evaluate();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -21,22 +39,19 @@ export function BackToTop() {
   };
 
   return (
-    <AnimatePresence>
-      {visible ? (
-        <motion.button
-          type="button"
-          onClick={handleClick}
-          aria-label="Kembali ke atas halaman"
-          initial={{ opacity: 0, scale: 0.5, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.5, y: 20 }}
-          whileHover={{ x: -3, y: -3 }}
-          whileTap={{ scale: 0.92 }}
-          className="nb-border-thick fixed bottom-6 right-5 z-[65] flex h-14 w-14 items-center justify-center rounded-brutal bg-primary text-ink shadow-brutal-md transition-shadow hover:shadow-brutal-lg sm:right-8 sm:h-16 sm:w-16"
-        >
-          <ArrowUp className="h-6 w-6" aria-hidden="true" />
-        </motion.button>
-      ) : null}
-    </AnimatePresence>
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label="Kembali ke atas halaman"
+      aria-hidden={!visible}
+      tabIndex={visible ? 0 : -1}
+      className={`nb-border-thick nb-hover-lift fixed bottom-6 right-5 z-[65] flex h-14 w-14 items-center justify-center rounded-brutal bg-primary text-ink shadow-brutal-md hover:shadow-brutal-lg sm:right-8 sm:h-16 sm:w-16 ${
+        visible
+          ? "scale-100 opacity-100"
+          : "pointer-events-none scale-50 opacity-0"
+      } transition-[opacity,transform,translate,box-shadow] duration-300`}
+    >
+      <ArrowUp className="h-6 w-6" aria-hidden="true" />
+    </button>
   );
 }

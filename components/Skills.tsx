@@ -1,13 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
 import { useState } from "react";
 
 import { Card } from "@/components/ui/Card";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { skillCategories, skills } from "@/lib/data";
-import { popIn, staggerContainer, viewportOnce } from "@/lib/motion";
 import { cn, colorMap } from "@/lib/utils";
 
 type Filter = "semua" | (typeof skillCategories)[number]["id"];
@@ -39,40 +37,32 @@ export function Skills() {
           {filters.map((item) => {
             const isActive = filter === item.id;
             return (
-              <motion.button
+              <button
                 key={item.id}
                 type="button"
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setFilter(item.id)}
-                whileHover={{ x: -2, y: -2 }}
-                whileTap={{ scale: 0.96 }}
                 className={cn(
-                  "nb-border rounded-brutal px-4 py-2.5 font-heading text-sm font-bold uppercase tracking-wide shadow-brutal transition-colors",
+                  "nb-border nb-hover-lift rounded-brutal px-4 py-2.5 font-heading text-sm font-bold uppercase tracking-wide shadow-brutal transition-colors",
                   isActive ? "bg-ink text-cream dark:bg-cream dark:text-ink" : "bg-surface text-body",
                 )}
               >
                 {item.label}
-              </motion.button>
+              </button>
             );
           })}
         </div>
 
-        <motion.ul
-          key={filter}
-          variants={staggerContainer(0.06)}
-          initial="hidden"
-          whileInView="show"
-          viewport={viewportOnce}
-          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {visible.map((skill) => {
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((skill, index) => {
             const Icon = skill.icon;
             return (
               <Card
                 key={skill.name}
                 as="li"
-                variants={popIn}
+                reveal="pop"
+                delay={Math.min(index, 5) * 0.05}
                 className="group flex flex-col gap-4 p-5"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -105,19 +95,21 @@ export function Skills() {
                     aria-valuemax={100}
                     aria-label={`Tingkat penguasaan ${skill.name}`}
                   >
-                    <motion.div
-                      className={cn("h-full", colorMap[skill.color].split(" ")[0])}
-                      initial={{ width: "0%" }}
-                      whileInView={{ width: `${skill.level}%` }}
-                      viewport={{ once: true, amount: 0.6 }}
-                      transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+                    {/* Batang terisi memakai animasi CSS yang baru berjalan ketika
+                        kartu induknya masuk ke layar (lihat kelas `.progress-fill`). */}
+                    <div
+                      className={cn(
+                        "progress-fill h-full origin-left",
+                        colorMap[skill.color].split(" ")[0],
+                      )}
+                      style={{ width: `${skill.level}%` }}
                     />
                   </div>
                 </div>
               </Card>
             );
           })}
-        </motion.ul>
+        </ul>
       </div>
     </section>
   );
